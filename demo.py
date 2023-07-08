@@ -23,7 +23,7 @@ import argparse
 """hyper parameters"""
 use_cuda = True
 
-def detect_cv2(cfgfile, weightfile, imgfile):
+def detect_cv2(cfgfile, weightfile, imgfile, namesfile=None):
     import cv2
     m = Darknet(cfgfile)
 
@@ -35,12 +35,13 @@ def detect_cv2(cfgfile, weightfile, imgfile):
         m.cuda()
 
     num_classes = m.num_classes
-    if num_classes == 20:
-        namesfile = 'data/voc.names'
-    elif num_classes == 80:
-        namesfile = 'data/coco.names'
-    else:
-        namesfile = 'data/x.names'
+    if not namesfile:
+        if num_classes == 20:
+            namesfile = 'data/voc.names'
+        elif num_classes == 80:
+            namesfile = 'data/coco.names'
+        else:
+            namesfile = 'data/x.names'
     class_names = load_class_names(namesfile)
 
     img = cv2.imread(imgfile)
@@ -146,10 +147,12 @@ def get_args():
                         default='./checkpoints/Yolov4_epoch1.pth',
                         help='path of trained model.', dest='weightfile')
     parser.add_argument('-imgfile', type=str,
-                        default='./data/mscoco2017/train2017/190109_180343_00154162.jpg',
+                        default='./car.jpg',
                         help='path of your image file.', dest='imgfile')
-    parser.add_argument('-torch', type=bool, default=false,
+    parser.add_argument('-torch', type=bool, default=False,
                         help='use torch weights')
+    parser.add_argument('-namesfile', type=str,
+                        help='path of names file', dest='namesfile')
     args = parser.parse_args()
 
     return args
@@ -158,7 +161,7 @@ def get_args():
 if __name__ == '__main__':
     args = get_args()
     if args.imgfile:
-        detect_cv2(args.cfgfile, args.weightfile, args.imgfile)
+        detect_cv2(args.cfgfile, args.weightfile, args.imgfile, args.namesfile)
         # detect_imges(args.cfgfile, args.weightfile)
         # detect_cv2(args.cfgfile, args.weightfile, args.imgfile)
         # detect_skimage(args.cfgfile, args.weightfile, args.imgfile)
